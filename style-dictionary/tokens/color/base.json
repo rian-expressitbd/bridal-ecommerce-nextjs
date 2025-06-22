@@ -1,0 +1,21 @@
+{
+  "color": {
+    "base": {
+      "primary": { "value": "#ea580c" },
+      "secondary": { "value": "#f97316" },
+      "tertiary": { "value": "#fb923c" },
+      "accent": { "value": "#ff311f" },
+      "muted": { "value": "#adb5bd" },
+      "foreground": {
+        "light": { "value": "#f8f8f8" },
+        "dark": { "value": "#121212" }
+      }
+    },
+    "state": {
+      "success": { "value": "#10b981" },
+      "warning": { "value": "#f59e0b" },
+      "error": { "value": "#ef4444" },
+      "info": { "value": "#3b82f6" }
+    }
+  }
+}

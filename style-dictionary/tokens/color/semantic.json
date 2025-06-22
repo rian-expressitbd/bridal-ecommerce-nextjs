@@ -1,0 +1,15 @@
+{
+  "color": {
+    "semantic": {
+      "text": {
+        "primary": { "value": "{color.base.foreground.light}" },
+        "secondary": { "value": "{color.base.muted}" },
+        "on-primary": { "value": "{color.base.foreground.dark}" }
+      },
+      "background": {
+        "primary": { "value": "{color.base.foreground.dark}" },
+        "secondary": { "value": "#1e1e1e" }
+      }
+    }
+  }
+}
