@@ -175,7 +175,7 @@ const Home = () => {
 
           {/* Buttons Section */}
           <div className="mt-8">
-            <div className="w-full md:w-[45%] px-4 mx-auto mt-4 flex flex-col md:flex-row justify-center gap-5 text-sm md:text-base">
+            <div className="w-full md:w-[45%] px-4 mx-auto mt-4 flex flex-col md:flex-row justify-center gap-5 text-sm ">
               {categories.slice(0, 3).map((category) => (
                 <Link
                   href={{
@@ -189,7 +189,7 @@ const Home = () => {
                 </Link>
               ))}
             </div>
-            <div className="w-full md:w-[60%] px-4 md:px-0 mx-auto mt-4 flex justify-center text-sm md:text-base">
+            <div className="w-full md:w-[60%] px-4 md:px-0 mx-auto mt-4 flex justify-center text-sm ">
               {categories[3] && (
                 <Link
                   href={{
@@ -209,7 +209,7 @@ const Home = () => {
           <div className="mt-7 px-3 md:px-0">
             <div className="flex items-center">
               <Image
-                src="/assets/Images/logo.png"
+                src="/assets/star.png"
                 alt="Brand Logo"
                 width={32}
                 height={32}
@@ -243,7 +243,7 @@ const Home = () => {
           {/* Client Gallery Section */}
           <div className="flex justify-center items-center mt-5">
             <Image
-              src="/assets/Images/logo.png"
+              src="/assets/star.png"
               alt="Brand Logo"
               width={32}
               height={32}
@@ -251,7 +251,7 @@ const Home = () => {
             />
             <h5 className="text-lg md:text-xl font-semibold">CLIENT GALLERY</h5>
             <Image
-              src="/assets/Images/logo.png"
+              src="/assets/star.png"
               alt="Brand Logo"
               width={32}
               height={32}
@@ -269,10 +269,10 @@ const Home = () => {
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 justify-items-center">
             {products.slice(0, visibleCount).map((product) => (
               <div className="mb-2" key={product.id}>
-                <Link href={`/singleproduct/${product.name}-${product.id}`}>
+                <Link href={`/products/${product.id}`}>
                   <Image
                     src={product.image}
-                    className="w-full h-auto transition-transform duration-300 ease-in-out hover:scale-105"
+                    className="transition-transform duration-300 ease-in-out hover:scale-105 w-full md:w-[400px] h-[300px]"
                     alt={product.name || 'Product'}
                     width={400}
                     height={500}
@@ -287,7 +287,7 @@ const Home = () => {
             <div className="text-center my-5">
               <button
                 onClick={handleViewMore}
-                className="px-7 py-1 font-medium text-sm md:text-base border hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 border-gray-800 rounded"
+                className="px-7 py-1 font-medium text-sm  border hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 border-gray-800 rounded"
               >
                 View More
               </button>

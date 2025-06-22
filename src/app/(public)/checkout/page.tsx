@@ -8,8 +8,8 @@ import { Order } from "@/types/cart";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AppDispatch, RootState } from "@/lib/store";
-import Footer from "@/components/Footer/Footer";
 import { clearCart } from "@/lib/features/cart/cartSlice";
+import Footer from "@/components/Frontend/Footer";
 
 interface CartItem {
   productId: string;
