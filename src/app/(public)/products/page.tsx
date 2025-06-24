@@ -342,7 +342,7 @@ export default function ProductsPage() {
         `}</style>
 
         {/* Search Bar */}
-        <div className="flex justify-center mx-auto px-3 mb-5 mt-5 relative max-w-2xl">
+        <div className="flex justify-center mx-auto px-3 mb-5 mt-10 relative max-w-2xl">
           <div className="relative w-full">
             <input
               ref={searchInputRef}
@@ -450,7 +450,7 @@ export default function ProductsPage() {
                   </div>
                   <button
                     onClick={applyPriceFilter}
-                    className="w-full py-2 bg-primary text-white rounded hover:bg-primary-dark transition"
+                    className="justify-center text-nowrap items-center w-full  px-5 py-2 text-sm  text-white border border-teal-700 text-teal-700 rounded-lg font-semibold bg-teal-700 hover:text-white transition-colors duration-300 ease-in-out hover:scale-105 hover:shadow-2xl shadow"
                   >
                     Apply Price Filter
                   </button>

@@ -34,7 +34,7 @@ export default function AddToCartBtn({
     const cartItem: TCartItem = {
       _id: selected._id,
       name: `${item.name}${variantName}`,
-      price: Number(selected.selling_price),
+      price: Number(selected.offer_price),
       image:
         variant?.image?.image?.secure_url ||
         item.images[0]?.image?.secure_url ||

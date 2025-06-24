@@ -1,20 +1,19 @@
+"use client";
 
-'use client';
-
-import { useState, useEffect } from 'react';
-import Link from 'next/link';
-import { useGetProductsQuery, useGetCategoriesQuery } from '@/lib/api/publicApi';
-import { useBusiness } from '@/hooks/useBusiness';
-import SocialMedia from '@/components/Frontend/SocialMedia';
-import Navbar from '@/components/Frontend/Navbar';
-import Footer from '@/components/Frontend/Footer';
-import ImageCarousel from '@/components/Frontend/Home/ImageCarousel';
-import ScrollToTopButton from '@/components/Frontend/ScrollToTopButton';
-import Image from 'next/image';
-import { Product } from '@/types/product';
-import { Category } from '@/types/business';
-import { motion, AnimatePresence } from 'framer-motion';
-import { FiX, FiMenu } from 'react-icons/fi';
+import { useState, useEffect } from "react";
+import Link from "next/link";
+import { useGetProductsQuery, useGetCategoriesQuery } from "@/lib/api/publicApi";
+import { useBusiness } from "@/hooks/useBusiness";
+import SocialMedia from "@/components/Frontend/SocialMedia";
+import Navbar from "@/components/Frontend/Navbar";
+import Footer from "@/components/Frontend/Footer";
+import ImageCarousel from "@/components/Frontend/Home/ImageCarousel";
+import ScrollToTopButton from "@/components/Frontend/ScrollToTopButton";
+import Image from "next/image";
+import { Product } from "@/types/product";
+import { Category } from "@/types/business";
+import { motion, AnimatePresence } from "framer-motion";
+import { FiX, FiMenu } from "react-icons/fi";
 
 interface AdaptedProduct {
   id: string;
@@ -34,10 +33,10 @@ const Sidebar = ({ isOpen, onClose, categories }: { isOpen: boolean; onClose: ()
         {isOpen && (
           <>
             <motion.div
-              initial={{ x: '-100%' }}
+              initial={{ x: "-100%" }}
               animate={{ x: 0 }}
-              exit={{ x: '-100%' }}
-              transition={{ type: 'tween', duration: 0.3 }}
+              exit={{ x: "-100%" }}
+              transition={{ type: "tween", duration: 0.3 }}
               className="fixed inset-y-0 left-0 z-30 w-4/5 max-w-xs bg-white shadow-lg overflow-y-auto"
             >
               <div className="p-4">
@@ -60,7 +59,7 @@ const Sidebar = ({ isOpen, onClose, categories }: { isOpen: boolean; onClose: ()
                     Home
                   </Link>
                   <Link
-                    href="/allProduct"
+                    href="/products"
                     className="block text-lg font-medium text-gray-800 hover:text-teal-500"
                     onClick={onClose}
                   >
@@ -72,8 +71,8 @@ const Sidebar = ({ isOpen, onClose, categories }: { isOpen: boolean; onClose: ()
                       <Link
                         key={category.id}
                         href={{
-                          pathname: '/allProduct',
-                          query: { category: JSON.stringify(category) },
+                          pathname: "/allProduct",
+                          query: { category: category.id },
                         }}
                         className="block text-md text-gray-600 hover:text-teal-500 py-1"
                         onClick={onClose}
@@ -135,7 +134,7 @@ const Home = () => {
       const adaptedProducts: AdaptedProduct[] = productsData.map((product: Product) => ({
         id: product._id,
         name: product.name,
-        image: product.images?.[0]?.image.secure_url || '/assets/Images/placeholder.png',
+        image: product.images?.[0]?.image.secure_url || "/assets/Images/placeholder.png",
       }));
       setProducts(adaptedProducts);
     }
@@ -157,8 +156,6 @@ const Home = () => {
     );
   }
 
- 
-
   return (
     <div className="">
       <Navbar onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
@@ -179,8 +176,8 @@ const Home = () => {
               {categories.slice(0, 3).map((category) => (
                 <Link
                   href={{
-                    pathname: '/allProduct',
-                    query: { category: JSON.stringify(category) },
+                    pathname: "/allProduct",
+                    query: { category: category.id },
                   }}
                   key={category.id}
                   className="w-full md:flex-1 px-4 md:px-0 py-1 border border-gray-800 font-medium hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 rounded text-center transition"
@@ -193,8 +190,8 @@ const Home = () => {
               {categories[3] && (
                 <Link
                   href={{
-                    pathname: '/allProduct',
-                    query: { category: JSON.stringify(categories[3]) },
+                    pathname: "/allProduct",
+                    query: { category: categories[3].id },
                   }}
                   key={categories[3]?.id}
                   className="w-full px-4 py-1 border border-gray-800 font-medium hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 rounded text-center transition"
@@ -273,7 +270,7 @@ const Home = () => {
                   <Image
                     src={product.image}
                     className="transition-transform duration-300 ease-in-out hover:scale-105 w-full md:w-[400px] h-[300px]"
-                    alt={product.name || 'Product'}
+                    alt={product.name || "Product"}
                     width={400}
                     height={500}
                   />
@@ -287,7 +284,7 @@ const Home = () => {
             <div className="text-center my-5">
               <button
                 onClick={handleViewMore}
-                className="px-7 py-1 font-medium text-sm  border hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 border-gray-800 rounded"
+                className="px-7 py-1 font-medium text-sm border hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 border-gray-800 rounded"
               >
                 View More
               </button>

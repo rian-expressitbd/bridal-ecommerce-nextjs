@@ -113,13 +113,8 @@ export const publicApi = createApi({
       Product[],
       { categoryId: string; page?: number; limit?: number }
     >({
-      query: ({ categoryId, page, limit }) => ({
-        url: `/public/${OWNER_ID}/${BUSINESS_ID}/products`,
-        params: {
-          category_group: categoryId,
-          ...(page && { page }),
-          ...(limit && { limit }),
-        },
+      query: (categoryId) => ({
+        url: `/public/${OWNER_ID}/${BUSINESS_ID}/products?category_group=${categoryId}`,
       }),
       transformResponse: (res: ApiResponse<Product[]>) => res.data,
       providesTags: (result) =>
@@ -143,5 +138,5 @@ export const {
   useGetProductQuery,
   useCreateOnlineOrderMutation,
   useGetCategoriesQuery,
-  useGetProductsByCategoriesQuery
+  useGetProductsByCategoriesQuery,
 } = publicApi;

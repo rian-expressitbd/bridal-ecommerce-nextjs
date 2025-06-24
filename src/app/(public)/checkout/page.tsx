@@ -9,7 +9,6 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AppDispatch, RootState } from "@/lib/store";
 import { clearCart } from "@/lib/features/cart/cartSlice";
-import Footer from "@/components/Frontend/Footer";
 
 interface CartItem {
   productId: string;
@@ -87,7 +86,7 @@ export default function Checkout(): JSX.Element {
   paymentMethod === "cod"
     ? formData.deliveryArea === "inside_dhaka"
       ? 60
-      : 80
+      : 100
     : 0;
   const grandTotal = totalDue + deliveryCharge;
 
@@ -143,177 +142,127 @@ export default function Checkout(): JSX.Element {
     <>
       <CommonLayout>
         <Toaster position='top-center' />
-        <div className='mx-auto py-8 px-0 md:px-4'>
-          <h1 className='text-3xl font-bold text-gray-800 mb-6'>Checkout</h1>
-          <div className='grid grid-cols-1 lg:grid-cols-2 gap-8'>
-            {/* Shipping Form */}
-            <div className='bg-white shadow-lg p-6 rounded-lg'>
-              <h2 className='text-xl font-semibold text-gray-800 mb-4'>
-                Shipping Information
-              </h2>
-              <form onSubmit={handleSubmit}>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='name'
-                    className='block text-sm font-medium text-gray-600'
-                  >
-                    Full Name
-                  </label>
+        <div className='mx-auto py-8 px-4'>
+          <div className='flex flex-col lg:flex-row gap-8'>
+            {/* Left Column - Your Products */}
+            <div className='w-full lg:w-2/3 bg-white p-6 rounded-lg shadow-lg'>
+              <h2 className='text-xl font-semibold text-gray-800 mb-4'>Your Products</h2>
+              {items.length > 0 ? (
+                items.map((item, index) => (
+                  <div key={index} className='mb-4'>
+                    <div className='flex items-center'>
+                      
+                      <div className='flex items-center gap-2'>
+                        {item.image && (
+                          <Image
+                            src={item.image}
+                            alt={item.name}
+                            width={50}
+                            height={50}
+                            className='mr-2'
+                          />
+                        )}
+                        <div>
+  <p className='font-medium'>{item.name}</p>
+                        <p className='text-gray-600'>Unit Price: ৳{item.price}</p>
+                        <p className='text-gray-600'>Quantity: {item.quantity}</p>
+                        
+                        </div>
+                      
+                      </div>
+                    </div>
+                  </div>
+                ))
+              ) : (
+                <p className='text-gray-500'>No items in cart</p>
+              )}
+            </div>
+
+            {/* Right Column - Order Delivery Details */}
+            <div className='w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg'>
+              <h2 className='text-xl font-semibold text-gray-800 mb-4'>Order Delivery Details</h2>
+              <form onSubmit={handleSubmit} className='space-y-4'>
+                <div>
+                  <label className='block text-sm font-medium text-gray-600'>Name</label>
                   <input
                     type='text'
-                    id='name'
                     name='name'
                     value={formData.name}
                     onChange={handleInputChange}
-                    className='mt-1 p-3 w-full border rounded-md'
-                    placeholder='Enter your full name...'
+                    className='mt-1 p-2 w-full border rounded-md'
+                    placeholder='Enter your name...'
                     required
                   />
                 </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='phone'
-                    className='block text-sm font-medium text-gray-600'
-                  >
-                    Phone Number
-                  </label>
+                <div>
+                  <label className='block text-sm font-medium text-gray-600'>Phone No</label>
                   <input
                     type='tel'
-                    id='phone'
                     name='phone'
                     value={formData.phone}
                     onChange={handleInputChange}
-                    className='mt-1 p-3 w-full border rounded-md'
-                    placeholder='Enter phone number...'
+                    className='mt-1 p-2 w-full border rounded-md'
+                    placeholder='Enter your phone number...'
                     required
                   />
                 </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='address'
-                    className='block text-sm font-medium text-gray-600'
-                  >
-                    Address
-                  </label>
+                <div>
+                  <label className='block text-sm font-medium text-gray-600'>Delivery Address</label>
                   <input
                     type='text'
-                    id='address'
                     name='address'
                     value={formData.address}
                     onChange={handleInputChange}
-                    className='mt-1 p-3 w-full border rounded-md'
-                    placeholder='Enter your address...'
+                    className='mt-1 p-2 w-full border rounded-md'
+                    placeholder='Enter your delivery address...'
                     required
                   />
                 </div>
-                <div className='mb-4'>
-                  <label
-                    htmlFor='deliveryArea'
-                    className='block text-sm font-medium text-gray-600'
-                  >
-                    Delivery Area
-                  </label>
-                  <select
-                    id='deliveryArea'
-                    name='deliveryArea'
-                    value={formData.deliveryArea}
-                    onChange={handleInputChange}
-                    className='mt-1 p-3 w-full border rounded-md'
-                    required
-                  >
-                    <option value='' disabled>
-                      Select delivery area
-                    </option>
-                    <option value='inside_dhaka'>Inside Dhaka</option>
-                    <option value='outside_dhaka'>Outside Dhaka</option>
-                  </select>
-                </div>
-              </form>
-            </div>
-
-            {/* Order Summary & Payment */}
-            <div className='bg-white shadow-lg p-6 rounded-lg'>
-              <h2 className='text-xl font-semibold text-gray-800 mb-4'>
-                Order Summary
-              </h2>
-              {items.length === 0 ? (
-                <p className='text-red-500 text-sm'>Your cart is empty</p>
-              ) : (
-                <div className='space-y-4'>
-                  {items.map((item, index) => (
-                    <div
-                      key={`${item.productId}-${index}`}
-                      className='flex justify-between border-b pb-4'
-                    >
-                      <div className='flex items-start gap-4 w-full'>
-                        <div className='w-20 h-20 bg-gray-100 rounded-md overflow-hidden relative'>
-                          {item.image ? (
-                            <Image
-                              src={item.image}
-                              alt={item.name}
-                              fill
-                              className='object-cover'
-                            />
-                          ) : (
-                            <div className='w-full h-full flex items-center justify-center text-gray-400'>
-                              <span>No Image</span>
-                            </div>
-                          )}
-                        </div>
-                        <div className='flex-1'>
-                          <h3 className='font-medium'>{item.name}</h3>
-                          <p className='text-sm text-gray-500'>
-                            Qty: {item.quantity}
-                          </p>
-                          <p className='text-sm text-gray-500'>
-                            Price: BDT {item.price}
-                          </p>
-                        </div>
-                        <div className='text-gray-800 font-medium'>
-                          BDT {(item.price * item.quantity).toLocaleString()}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
-                </div>
-              )}
-
-              <h2 className='text-xl font-semibold text-gray-800 mt-6 mb-4'>
-                Payment Method
-              </h2>
-              <div className='space-y-3'>
-                {["cod", "bkash", "nagad"].map((method) => (
-                  <div className='flex items-center' key={method}>
-                    <input
-                      type='radio'
-                      id={method}
-                      name='paymentMethod'
-                      value={method}
-                      checked={paymentMethod === method}
-                      onChange={() => setPaymentMethod(method)}
-                      className='h-4 w-4 text-blue-500 border-gray-300'
-                    />
-                    <label
-                      htmlFor={method}
-                      className='ml-2 block text-sm text-gray-700'
-                    >
-                      {method === "cod"
-                        ? "Cash on Delivery"
-                        : method.toUpperCase()}
+                <div>
+                  <label className='block text-sm font-medium text-gray-600'>Delivery Charge</label>
+                  <div className='mt-1'>
+                    <label className='inline-flex items-center mr-4'>
+                      <input
+                        type='radio'
+                        name='deliveryArea'
+                        value='inside_dhaka'
+                        checked={formData.deliveryArea === 'inside_dhaka'}
+                        onChange={handleInputChange}
+                        className='form-radio text-blue-500'
+                      />
+                      <span className='ml-2'>Inside Dhaka - 60৳</span>
+                    </label>
+                    <label className='inline-flex items-center'>
+                      <input
+                        type='radio'
+                        name='deliveryArea'
+                        value='outside_dhaka'
+                        checked={formData.deliveryArea === 'outside_dhaka'}
+                        onChange={handleInputChange}
+                        className='form-radio text-blue-500'
+                      />
+                      <span className='ml-2'>Outside Dhaka - 100৳</span>
                     </label>
                   </div>
-                ))}
-                {(paymentMethod === "bkash" || paymentMethod === "nagad") && (
-                  <div className='mt-4'>
-                    <label
-                      htmlFor='transactionId'
-                      className='block text-sm font-medium text-gray-600'
-                    >
-                      Transaction ID
-                    </label>
+                </div>
+                <div>
+                  <label className='block text-sm font-medium text-gray-600'>Payment Method</label>
+                  <select
+                    name='paymentMethod'
+                    value={paymentMethod}
+                    onChange={(e) => setPaymentMethod(e.target.value)}
+                    className='mt-1 p-2 w-full border rounded-md'
+                  >
+                    <option value='cod'>Cash on Delivery</option>
+                    <option value='bkash'>bKash</option>
+                    <option value='nagad'>Nagad</option>
+                  </select>
+                </div>
+                {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
+                  <div>
+                    <label className='block text-sm font-medium text-gray-600'>Transaction ID</label>
                     <input
                       type='text'
-                      id='transactionId'
                       value={transactionId}
                       onChange={(e) => setTransactionId(e.target.value)}
                       className='mt-1 p-2 w-full border rounded-md'
@@ -322,40 +271,33 @@ export default function Checkout(): JSX.Element {
                     />
                   </div>
                 )}
-              </div>
-
-              {/* Price Summary */}
-              <div className='pt-4 space-y-2'>
-                <div className='flex justify-between font-medium text-gray-700'>
-                  <p>Subtotal</p>
-                  <p>BDT {totalDue.toLocaleString()}</p>
+                <div>
+                  <label className='block text-sm font-medium text-gray-600'>Additional Notes (Optional)</label>
+                  <input
+                    type='text'
+                    className='mt-1 p-2 w-full border rounded-md'
+                    placeholder='Enter your note...'
+                  />
                 </div>
-                <div className='flex justify-between font-medium text-gray-700'>
-                  <p>Delivery Charge</p>
-                  <p>BDT {deliveryCharge.toLocaleString()}</p>
+                <div className='bg-green-100 p-4 rounded-lg'>
+                  <h3 className='font-semibold text-gray-800'>Order Summary</h3>
+                  <p>Subtotal: ৳{totalDue.toLocaleString()}</p>
+                  <p>Delivery Charge: ৳{deliveryCharge.toLocaleString()}</p>
+                  <p className='font-bold text-yellow-600'>Total Amount: ৳{grandTotal.toLocaleString()}</p>
+                  <button
+                    type='submit'
+                    disabled={isSubmitting || items.length === 0}
+                    className={`mt-4 w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 ${isSubmitting || items.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
+                  >
+                    {isSubmitting ? 'Placing Order...' : 'Place Order'}
+                  </button>
                 </div>
-                <div className='flex justify-between font-semibold text-gray-800 text-lg'>
-                  <p>Total</p>
-                  <p>BDT {grandTotal.toLocaleString()}</p>
-                </div>
-              </div>
-
-              <button
-                onClick={handleSubmit}
-                disabled={isSubmitting || items.length === 0}
-                className={`mt-6 w-full bg-blue-600 text-white py-3 rounded-md hover:bg-blue-700 transition ${
-                  isSubmitting || items.length === 0
-                    ? "opacity-50 cursor-not-allowed"
-                    : ""
-                }`}
-              >
-                {isSubmitting ? "Placing Order..." : "Place Order"}
-              </button>
+              </form>
             </div>
           </div>
+       
         </div>
       </CommonLayout>
-      <Footer />
     </>
   );
 }
