@@ -16,7 +16,7 @@ export default function CategoryProductCard({ product }: CardProps) {
           {/* Product image */}
           {product.images[0]?.image?.optimizeUrl && (
             <Image
-              src={product.images[0].image.optimizeUrl}
+              src={product.images[0].image?.optimizeUrl}
               className='mx-auto w-full h-[368px] object-cover my-auto'
               alt={product.name}
               width={300}

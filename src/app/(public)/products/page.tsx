@@ -524,7 +524,7 @@ export default function ProductsPage() {
                   <div className="relative w-full aspect-square bg-gray-200">
                     <Image
                       src={
-                        product.images?.[0]?.image.secure_url ||
+                        product.images?.[0]?.image?.secure_url ||
                         "https://via.placeholder.com/300"
                       }
                       alt={product.name}

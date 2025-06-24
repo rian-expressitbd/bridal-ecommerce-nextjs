@@ -7,8 +7,7 @@ import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
-
-import { Product, Variant } from "@/types/product"; // Use Product and Variant from @/types/product
+import { Product, Variant } from "@/types/product";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { VideoPlayer } from "@/components/media/VideoPlayer";
 import Title from "@/components/ui/Title";
@@ -43,28 +42,26 @@ export default function ProductPage() {
     error,
   } = useGetProductByIdQuery(productId);
 
-  const product = rtkProduct?.data[0]; // Changed from rtkProduct.data[0]
+  const product = rtkProduct?.data[0];
   const hasVariants = product?.hasVariants || false;
   const variants: Variant[] = product?.variantsId || [];
 
   useEffect(() => {
-    console.log(product);
-
     if (product?.variantsId?.length) {
-      const prices = product.variantsId.map((v: Variant) => v.selling_price);
+      const prices = product.variantsId.map((v: Variant) => parseFloat(v.selling_price));
       setMinPrice(Math.min(...prices));
       setMaxPrice(Math.max(...prices));
 
       if (!hasVariants && variants.length === 1) {
         setSelectedVariant(variants[0]);
-        setSellingPrice(variants[0].selling_price);
-        setOfferPrice(variants[0].offer_price);
+        setSellingPrice(parseFloat(variants[0].selling_price));
+        setOfferPrice(parseFloat(variants[0].offer_price));
       }
     }
   }, [product, hasVariants, variants]);
 
   const { data: relatedProducts } = useGetProductsByCategoriesQuery(
-    { categoryId: product?.sub_category?.[0]?._id || "", page: 1, limit: 10 }, // Added pagination params
+    { categoryId: product?.sub_category?.[0]?._id || "", page: 1, limit: 10 },
     { skip: !product?.sub_category?.[0]?._id }
   );
 
@@ -72,8 +69,8 @@ export default function ProductPage() {
     const variant = variants.find((v: Variant) => v._id === variantId);
     if (variant) {
       setSelectedVariant(variant);
-      setSellingPrice(variant.selling_price);
-      setOfferPrice(variant.offer_price);
+      setSellingPrice(parseFloat(variant.selling_price));
+      setOfferPrice(parseFloat(variant.offer_price));
     }
   };
 
@@ -83,7 +80,7 @@ export default function ProductPage() {
       url: img?.image?.secure_url || "",
     })) || []),
     ...(product?.video?.secure_url
-      ? [{ type: "video" as const, url: product.video.secure_url }]
+      ? [{ type: "video" as const, url: product.video?.secure_url }]
       : []),
   ];
 
@@ -129,6 +126,11 @@ export default function ProductPage() {
   const stock = selectedVariant?.variants_stock ?? product.total_stock ?? 0;
   const requiresVariantSelection =
     (hasVariants || variants.length > 1) && !selectedVariant;
+
+  // Determine if this is a preorder product
+  const isPreorder = product.isPreOrder || 
+                    (selectedVariant?.isPreOrder ?? false) || 
+                    (!hasVariants && variants.length === 1 && variants[0].isPreOrder);
 
   return (
     <div className='overflow-x-hidden'>
@@ -262,6 +264,11 @@ export default function ProductPage() {
               >
                 {stock > 0 ? "In Stock" : "Out of Stock"}
               </span>
+              {isPreorder && stock > 0 && (
+                <span className='px-2 py-1 rounded text-sm bg-blue-100 text-blue-800'>
+                  Preorder
+                </span>
+              )}
             </div>
 
             <div className=' items-center justify-center gap-3  p-3 mt-5 mb-5 w-24'>
@@ -294,7 +301,7 @@ export default function ProductPage() {
                 <h4 className='text-md font-semibold'>Select Variant:</h4>
                 <div className='grid grid-cols-3 lg:grid-cols-4 gap-4 mt-2'>
                   {variants.map((variant: Variant) => {
-                    const variantValue = variant.variants_values.join("-");
+                    const variantValue = variant.variants_values?.join("-") || variant.name || "";
                     const isSelected = selectedVariant?._id === variant._id;
                     return (
                       <div key={`var-${uuidv4()}`}>
@@ -307,6 +314,9 @@ export default function ProductPage() {
                           onClick={() => handleSelectVariant(variant._id)}
                         >
                           <h3 className="truncate">{variantValue}</h3>
+                          {variant.isPreOrder && (
+                            <span className="ml-2 text-xs text-blue-600">(Preorder)</span>
+                          )}
                         </div>
                       </div>
                     );
@@ -321,18 +331,36 @@ export default function ProductPage() {
               </div>
             )}
 
-            <div className='mt-5'>
-              <AddToCartBtn
-                item={product}
-                variant={selectedVariant || undefined}
-                quantity={quantity}
-                disabled={!selectedVariant}
-                className={
-                  !selectedVariant
-                    ? "disabled"
-                    : "inline-flex justify-center items-center text-sm md:text-base text-nowrap px-8 py-2 bg-gradient-to-r from-teal-500 to-teal-700 border border-teal-200 text-white font-semibold rounded-lg transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full"
-                }
-              />
+            <div className="mt-5">
+              {isPreorder ? (
+                <div>
+                  <button
+                    className="inline-flex justify-center items-center text-sm md:text-base text-nowrap px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 border border-orange-200 text-white font-semibold rounded-lg transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full"
+                    onClick={() => {
+                      // Handle preorder logic here
+                      console.log("Preorder clicked");
+                    }}
+                  >
+                    Preorder Now
+                  </button>
+                  <div className="mt-2 text-sm text-gray-600">
+                    <p>Estimated delivery: 2-4 weeks after order</p>
+                    <p className="text-xs mt-1">Preorder items will ship when available</p>
+                  </div>
+                </div>
+              ) : (
+                <AddToCartBtn
+                  item={product}
+                  variant={selectedVariant || (!hasVariants && variants.length === 1 ? variants[0] : undefined)}
+                  quantity={quantity}
+                  disabled={hasVariants ? !selectedVariant : false}
+                  className={
+                    (hasVariants && !selectedVariant) || (hasVariants && variants.length > 1 && !selectedVariant)
+                      ? "disabled"
+                      : "inline-flex justify-center items-center text-sm md:text-base text-nowrap px-8 py-2 bg-gradient-to-r from-teal-500 to-teal-700 border border-teal-200 text-white font-semibold rounded-lg transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full"
+                  }
+                />
+              )}
             </div>
 
             {product.tags?.length > 0 && (

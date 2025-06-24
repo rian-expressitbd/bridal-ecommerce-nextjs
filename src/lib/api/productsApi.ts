@@ -17,7 +17,7 @@ export const productsApi = createApi({
     }),
     getProductById: builder.query({
       query: (productId: string) =>
-        `/public/6829ddabc20c6404b3e2a66b/6829ded2c20c6404b3e2a680/products?_id=${productId}`,
+        `/public/685a82c3f24cbde796e5869f/685a8442d094c4e505035a87/products?_id=${productId}`,
     }),
   }),
 });

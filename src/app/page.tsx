@@ -133,7 +133,7 @@ const Home = () => {
       const adaptedProducts: AdaptedProduct[] = productsData.map((product: Product) => ({
         id: product._id,
         name: product.name,
-        image: product.images?.[0]?.image.secure_url || "/assets/Images/placeholder.png",
+        image: product.images?.[0]?.image?.secure_url || "/assets/Images/placeholder.png",
       }));
       setProducts(adaptedProducts);
     }

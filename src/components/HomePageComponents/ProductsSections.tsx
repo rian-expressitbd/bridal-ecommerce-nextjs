@@ -176,7 +176,7 @@ function ProductCard({ product }: { product: Product }) {
       <div className='relative w-full h-[320px] bg-gray-100'>
         <Image
           src={
-            product.images?.[0]?.image.secure_url ||
+            product.images?.[0]?.image?.secure_url ||
             "https://via.placeholder.com/300"
           }
           alt={product.name}

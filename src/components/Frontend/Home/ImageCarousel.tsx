@@ -45,7 +45,7 @@ const ImageCarousel = () => {
               <img
                 src={image}
                 alt={`carousel-${index}`}
-                className="absolute block w-full h-full object-cover"
+                className="absolute block w-full h-full object-cover object-top"
               />
             </div>
           ))}

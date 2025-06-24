@@ -9,8 +9,6 @@ import { useEffect, useState } from "react";
 import { useGetCategoriesQuery } from "@/lib/api/publicApi";
 import { Category } from "@/types/business";
 
-
-
 interface AdaptedCategory {
   id: string;
   name: string;
@@ -123,7 +121,8 @@ const Navbar = () => {
 
   if (!businessData) return null;
 
-  const logoUrl = businessData.logo.optimizeUrl || businessData.logo.secure_url;
+  const logoUrl =
+    businessData.logo?.optimizeUrl || businessData.logo?.secure_url;
 
   return (
     <>

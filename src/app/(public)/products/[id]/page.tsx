@@ -126,7 +126,7 @@ export default function ProductPage() {
         _id: productDataItem._id,
         name: productDataItem.name || "Unnamed Product",
         images: productDataItem.images?.map((img) => ({
-          image: { secure_url: img.image.secure_url },
+          image: { secure_url: img.image?.secure_url },
         })) || [{ image: { secure_url: "/assets/images/placeholder.png" } }],
         offer_price: defaultVariant.offer_price || "0",
         selling_price: defaultVariant.selling_price || "0",
