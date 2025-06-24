@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { Suspense, useEffect, useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { useSearchParams } from "next/navigation";
@@ -9,47 +9,65 @@ import ScrollToTopButton from "@/components/Frontend/ScrollToTopButton";
 import Navbar from "@/components/Frontend/Navbar";
 import Footer from "@/components/Frontend/Footer";
 
-// Define Product type based on API response
+interface Image {
+  image: {
+    secure_url: string;
+  };
+}
+
+interface SizeGuard {
+  _id: string;
+  name: string;
+}
+
+interface SubCategory {
+  _id: string;
+  name: string;
+}
+
 interface Variant {
+  _id?: string;
   offer_price?: string | number;
   selling_price?: string | number;
   name?: string;
-  [key: string]: any; // Allow additional fields
+  currency?: string;
 }
 
 interface Product {
   _id: string;
   name: string;
-  images: { image: { secure_url: string } }[];
-  sizeGuard?: { _id: string; name: string };
-  sub_category?: { _id: string; name: string }[];
+  images: Image[];
+  sizeGuard?: SizeGuard;
+  sub_category?: SubCategory[];
   currency?: string;
   variantsId?: Variant[];
-  [key: string]: any; // Allow additional fields
 }
 
-const AllProducts = () => {
+interface ProductsResponse {
+  data: Product[];
+}
+
+const AllProductsContent = () => {
   const searchParams = useSearchParams();
   const categoryId = searchParams.get("category");
   const [products, setProducts] = useState<Product[]>([]);
-  const [visibleCount, setVisibleCount] = useState(1); // Start with 1 to show the single product
+  const [visibleCount, setVisibleCount] = useState(1);
   const batchSize = 6;
 
   const {
     data: productsData,
     isLoading,
     error,
-  } = useGetProductsByCategoriesQuery(categoryId || ""); // Default to empty string if null
+  } = useGetProductsByCategoriesQuery(categoryId || "");
 
   useEffect(() => {
-    console.log("Category ID:", categoryId);
-    console.log("Full Products Response:", productsData);
-    console.log("Error:", error);
-    if (productsData?.data) {
-      setProducts(productsData.data);
-      console.log("Updated Products:", productsData.data);
+    if (productsData) {
+      const response = productsData as ProductsResponse;
+      if (response.data) {
+        setProducts(response.data);
+      }
     }
-  }, [productsData, error, categoryId]);
+  }, [productsData]);
 
   const handleViewMore = () => {
     setVisibleCount((prev) => Math.min(prev + batchSize, products.length));
@@ -67,15 +85,14 @@ const AllProducts = () => {
     console.error("API Error Details:", error);
     return (
       <div className="text-center p-4 text-red-500">
-        Failed to load products. Please try again later. <br />
-        Error: {error.message || "Unknown error"}
+        Failed to load products. Please try again later.
       </div>
     );
   }
 
   return (
     <div>
-      <Navbar onToggleSidebar={() => {}} isSidebarOpen={false} />
+      <Navbar />
       <ScrollToTopButton />
       <div className="container mx-auto pt-16 md:pt-20">
         <div className="w-[90%] mx-auto">
@@ -100,7 +117,7 @@ const AllProducts = () => {
                   const variant = product.variantsId?.[0] || {};
                   return (
                     <div key={product._id} className="mb-4 px-5 md:p-0">
-                      <Link href={`/products/${product.name}-${product._id}`}>
+                      <Link href={`/products/${product._id}`}>
                         <Image
                           src={
                             product.images[0]?.image.secure_url ||
@@ -147,6 +164,18 @@ const AllProducts = () => {
       </div>
       <Footer />
     </div>
+  );
+};
+
+const AllProducts = () => {
+  return (
+    <Suspense fallback={
+      <div className="flex justify-center items-center h-screen">
+        <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-teal-500"></div>
+      </div>
+    }>
+      <AllProductsContent />
+    </Suspense>
   );
 };
 

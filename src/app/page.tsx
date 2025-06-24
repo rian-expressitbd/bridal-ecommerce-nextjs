@@ -3,7 +3,6 @@
 import { useState, useEffect } from "react";
 import Link from "next/link";
 import { useGetProductsQuery, useGetCategoriesQuery } from "@/lib/api/publicApi";
-import { useBusiness } from "@/hooks/useBusiness";
 import SocialMedia from "@/components/Frontend/SocialMedia";
 import Navbar from "@/components/Frontend/Navbar";
 import Footer from "@/components/Frontend/Footer";
@@ -13,7 +12,7 @@ import Image from "next/image";
 import { Product } from "@/types/product";
 import { Category } from "@/types/business";
 import { motion, AnimatePresence } from "framer-motion";
-import { FiX, FiMenu } from "react-icons/fi";
+import { FiX } from "react-icons/fi";
 
 interface AdaptedProduct {
   id: string;
@@ -100,7 +99,7 @@ const Sidebar = ({ isOpen, onClose, categories }: { isOpen: boolean; onClose: ()
 };
 
 const Home = () => {
-  const { businessData } = useBusiness();
+  
   const [products, setProducts] = useState<AdaptedProduct[]>([]);
   const [categories, setCategories] = useState<AdaptedCategory[]>([]);
   const [visibleCount, setVisibleCount] = useState(3);
@@ -110,13 +109,13 @@ const Home = () => {
   const {
     data: categoriesData,
     isLoading: categoriesLoading,
-    error: categoriesError,
+
   } = useGetCategoriesQuery();
 
   const {
     data: productsData,
     isLoading: productsLoading,
-    error: productsError,
+   
   } = useGetProductsQuery({});
 
   useEffect(() => {
@@ -144,9 +143,7 @@ const Home = () => {
     setVisibleCount((prev) => Math.min(prev + batchSize, products.length));
   };
 
-  const toggleSidebar = () => {
-    setIsSidebarOpen((prev) => !prev);
-  };
+
 
   if (categoriesLoading || productsLoading) {
     return (
@@ -158,7 +155,7 @@ const Home = () => {
 
   return (
     <div className="">
-      <Navbar onToggleSidebar={toggleSidebar} isSidebarOpen={isSidebarOpen} />
+      <Navbar  />
       <Sidebar
         isOpen={isSidebarOpen}
         onClose={() => setIsSidebarOpen(false)}
@@ -180,7 +177,7 @@ const Home = () => {
                     query: { category: category.id },
                   }}
                   key={category.id}
-                  className="w-full md:flex-1 px-4 md:px-0 py-1 border border-gray-800 font-medium hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 rounded text-center transition"
+                  className="w-full md:flex-1 px-4 md:px-0 py-1 border border-gray-800 font-medium hover:bg-gradient-to-b from-teal-500 to-teal-700 hover:text-white hover:border-teal-400 rounded text-center transition truncate"
                 >
                   {category.name}
                 </Link>
@@ -220,11 +217,11 @@ const Home = () => {
           </div>
 
           {/* Video Section */}
-          <div className="flex justify-center mt-6">
+          <div className="flex justify-center mt-6 w-full">
             <div className="w-full">
               <div className="relative overflow-hidden">
                 <video
-                  controls
+                  
                   autoPlay
                   muted
                   loop
@@ -263,16 +260,16 @@ const Home = () => {
             </p>
           </div>
 
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mt-8 justify-items-center">
+          <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-4 gap-2 mt-8 justify-items-center">
             {products.slice(0, visibleCount).map((product) => (
               <div className="mb-2" key={product.id}>
                 <Link href={`/products/${product.id}`}>
                   <Image
                     src={product.image}
-                    className="transition-transform duration-300 ease-in-out hover:scale-105 w-full md:w-[400px] h-[300px]"
+                    className="transition-transform duration-300 ease-in-out hover:scale-105 w-full md:w-[400px] h-[500px]"
                     alt={product.name || "Product"}
-                    width={400}
-                    height={500}
+                    width={1080}
+                    height={1000}
                   />
                 </Link>
               </div>

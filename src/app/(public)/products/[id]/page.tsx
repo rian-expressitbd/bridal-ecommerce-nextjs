@@ -23,7 +23,6 @@ interface Variant {
   image: Image;
   barcode: string;
   sku: string;
-
   selling_price: string;
   condition: string;
   discount_type: string;
@@ -44,15 +43,27 @@ interface SubCategory {
   name: string;
 }
 
+interface Video {
+  // Define proper video type structure here
+  url: string;
+  type: string;
+}
+
+interface Brand {
+  // Define proper brand type structure here
+  _id: string;
+  name: string;
+}
+
 interface ProductData {
   _id: string;
   name: string;
   short_description: string;
-  long_description?: string; // Add long_description to ProductData
+  long_description?: string;
   tags: string[];
   images: Image[];
-  video: any[];
-  brand: null | any;
+  video: Video[];
+  brand: Brand | null;
   sizeGuard: {
     _id: string;
     name: string;
@@ -73,7 +84,7 @@ interface Product {
   offer_price: string;
   selling_price: string;
   short_desc: string;
-  long_desc?: string; // Add long_description to Product interface
+  long_desc?: string;
   category_id: string;
   pre_order: boolean;
   total_stock?: number;
@@ -84,6 +95,13 @@ interface Product {
     offer_price: string;
     variants_stock: number;
   }[];
+}
+
+interface ApiError {
+  data?: {
+    message?: string;
+  };
+  status?: number;
 }
 
 export default function ProductPage() {
@@ -101,7 +119,6 @@ export default function ProductPage() {
 
   useEffect(() => {
     if (Array.isArray(productData) && productData.length > 0) {
-      console.log("Product Data Received:", productData);
       const productDataItem = productData[0] as ProductData;
       const defaultVariant = productDataItem.variantsId?.[0] || {};
 
@@ -114,7 +131,7 @@ export default function ProductPage() {
         offer_price: defaultVariant.offer_price || "0",
         selling_price: defaultVariant.selling_price || "0",
         short_desc: striptags(productDataItem.short_description || ""),
-        long_desc: striptags(productDataItem.long_description || ""), // Map long_description
+        long_desc: striptags(productDataItem.long_description || ""),
         category_id: productDataItem.sub_category?.[0]?._id || "",
         pre_order:
           productDataItem.variantsId?.some((v: Variant) => v.isPreOrder) ||
@@ -130,12 +147,6 @@ export default function ProductPage() {
       };
 
       setSingleProduct(formattedProduct);
-    } else {
-      console.log("No valid product data:", {
-        isArray: Array.isArray(productData),
-        dataLength: productData?.length,
-        productData,
-      });
     }
   }, [productData]);
 
@@ -148,11 +159,12 @@ export default function ProductPage() {
   }
 
   if (error) {
+    const apiError = error as ApiError;
     console.error("API Error:", error);
     return (
       <div className='text-center p-4 text-red-500'>
         <p>
-          {(error as any)?.data?.message ||
+          {apiError?.data?.message ||
             "Failed to load product due to an API error. Please try again later."}
         </p>
         <Link
@@ -166,7 +178,6 @@ export default function ProductPage() {
   }
 
   if (!Array.isArray(productData) || productData.length === 0) {
-    console.log("Invalid or empty product data:", productData);
     return (
       <div className='text-center p-4 text-red-500'>
         <p>Product not found or invalid data received.</p>
@@ -181,7 +192,6 @@ export default function ProductPage() {
   }
 
   if (!singleProduct) {
-    console.log("Single product not set:", singleProduct);
     return (
       <div className='text-center p-4 text-red-500'>
         <p>Product data is not available.</p>
@@ -197,7 +207,7 @@ export default function ProductPage() {
 
   return (
     <div className='max-w-6xl mx-auto'>
-      <ProductDetails product={singleProduct} />
+      <ProductDetails />
     </div>
   );
 }

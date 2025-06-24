@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState, useEffect, JSX } from "react";
+import React, { useState,  JSX } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CommonLayout from "@/app/layouts/CommonLayout";
 import { Toaster, toast } from "react-hot-toast";
@@ -36,11 +36,9 @@ export default function Checkout(): JSX.Element {
   const [paymentMethod, setPaymentMethod] = useState<string>("cod");
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [isLoading, setIsLoading] = useState(true);
+ 
 
-  useEffect(() => {
-    setIsLoading(false);
-  }, []);
+ 
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -82,12 +80,12 @@ export default function Checkout(): JSX.Element {
     0
   );
 
- const deliveryCharge =
-  paymentMethod === "cod"
-    ? formData.deliveryArea === "inside_dhaka"
-      ? 60
-      : 100
-    : 0;
+  const deliveryCharge =
+    paymentMethod === "cod"
+      ? formData.deliveryArea === "inside_dhaka"
+        ? 60
+        : 100
+      : 0;
   const grandTotal = totalDue + deliveryCharge;
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -96,7 +94,7 @@ export default function Checkout(): JSX.Element {
 
     setIsSubmitting(true);
     try {
-      await new Promise((resolve) => setTimeout(resolve, 1000));
+      await new Promise((resolve) => setTimeout(resolve, 2000));
 
       const orderPayload: Order = {
         customer_name: formData.name,
@@ -130,7 +128,7 @@ export default function Checkout(): JSX.Element {
     }
   };
 
-  if (isLoading) {
+  if (isSubmitting) {
     return (
       <div className='flex justify-center items-center h-screen'>
         <div className='animate-spin rounded-full h-12 w-12 border-t-2 border-b-2 border-blue-500'></div>
@@ -142,160 +140,196 @@ export default function Checkout(): JSX.Element {
     <>
       <CommonLayout>
         <Toaster position='top-center' />
-        <div className='mx-auto py-8 px-4'>
-          <div className='flex flex-col lg:flex-row gap-8'>
-            {/* Left Column - Your Products */}
-            <div className='w-full lg:w-2/3 bg-white p-6 rounded-lg shadow-lg'>
-              <h2 className='text-xl font-semibold text-gray-800 mb-4'>Your Products</h2>
-              {items.length > 0 ? (
-                items.map((item, index) => (
-                  <div key={index} className='mb-4'>
-                    <div className='flex items-center'>
-                      
-                      <div className='flex items-center gap-2'>
-                        {item.image && (
-                          <Image
-                            src={item.image}
-                            alt={item.name}
-                            width={50}
-                            height={50}
-                            className='mr-2'
-                          />
-                        )}
-                        <div>
-  <p className='font-medium'>{item.name}</p>
-                        <p className='text-gray-600'>Unit Price: ৳{item.price}</p>
-                        <p className='text-gray-600'>Quantity: {item.quantity}</p>
-                        
-                        </div>
-                      
-                      </div>
-                    </div>
-                  </div>
-                ))
-              ) : (
-                <p className='text-gray-500'>No items in cart</p>
-              )}
-            </div>
-
-            {/* Right Column - Order Delivery Details */}
-            <div className='w-full lg:w-1/3 bg-white p-6 rounded-lg shadow-lg'>
-              <h2 className='text-xl font-semibold text-gray-800 mb-4'>Order Delivery Details</h2>
-              <form onSubmit={handleSubmit} className='space-y-4'>
-                <div>
-                  <label className='block text-sm font-medium text-gray-600'>Name</label>
-                  <input
-                    type='text'
-                    name='name'
-                    value={formData.name}
-                    onChange={handleInputChange}
-                    className='mt-1 p-2 w-full border rounded-md'
-                    placeholder='Enter your name...'
-                    required
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-600'>Phone No</label>
-                  <input
-                    type='tel'
-                    name='phone'
-                    value={formData.phone}
-                    onChange={handleInputChange}
-                    className='mt-1 p-2 w-full border rounded-md'
-                    placeholder='Enter your phone number...'
-                    required
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-600'>Delivery Address</label>
-                  <input
-                    type='text'
-                    name='address'
-                    value={formData.address}
-                    onChange={handleInputChange}
-                    className='mt-1 p-2 w-full border rounded-md'
-                    placeholder='Enter your delivery address...'
-                    required
-                  />
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-600'>Delivery Charge</label>
-                  <div className='mt-1'>
-                    <label className='inline-flex items-center mr-4'>
-                      <input
-                        type='radio'
-                        name='deliveryArea'
-                        value='inside_dhaka'
-                        checked={formData.deliveryArea === 'inside_dhaka'}
-                        onChange={handleInputChange}
-                        className='form-radio text-blue-500'
-                      />
-                      <span className='ml-2'>Inside Dhaka - 60৳</span>
-                    </label>
-                    <label className='inline-flex items-center'>
-                      <input
-                        type='radio'
-                        name='deliveryArea'
-                        value='outside_dhaka'
-                        checked={formData.deliveryArea === 'outside_dhaka'}
-                        onChange={handleInputChange}
-                        className='form-radio text-blue-500'
-                      />
-                      <span className='ml-2'>Outside Dhaka - 100৳</span>
-                    </label>
-                  </div>
-                </div>
-                <div>
-                  <label className='block text-sm font-medium text-gray-600'>Payment Method</label>
-                  <select
-                    name='paymentMethod'
-                    value={paymentMethod}
-                    onChange={(e) => setPaymentMethod(e.target.value)}
-                    className='mt-1 p-2 w-full border rounded-md'
-                  >
-                    <option value='cod'>Cash on Delivery</option>
-                    <option value='bkash'>bKash</option>
-                    <option value='nagad'>Nagad</option>
-                  </select>
-                </div>
-                {(paymentMethod === 'bkash' || paymentMethod === 'nagad') && (
-                  <div>
-                    <label className='block text-sm font-medium text-gray-600'>Transaction ID</label>
-                    <input
-                      type='text'
-                      value={transactionId}
-                      onChange={(e) => setTransactionId(e.target.value)}
-                      className='mt-1 p-2 w-full border rounded-md'
-                      placeholder='Enter transaction ID'
-                      required
-                    />
-                  </div>
-                )}
-                <div>
-                  <label className='block text-sm font-medium text-gray-600'>Additional Notes (Optional)</label>
-                  <input
-                    type='text'
-                    className='mt-1 p-2 w-full border rounded-md'
-                    placeholder='Enter your note...'
-                  />
-                </div>
-                <div className='bg-green-100 p-4 rounded-lg'>
-                  <h3 className='font-semibold text-gray-800'>Order Summary</h3>
-                  <p>Subtotal: ৳{totalDue.toLocaleString()}</p>
-                  <p>Delivery Charge: ৳{deliveryCharge.toLocaleString()}</p>
-                  <p className='font-bold text-yellow-600'>Total Amount: ৳{grandTotal.toLocaleString()}</p>
-                  <button
-                    type='submit'
-                    disabled={isSubmitting || items.length === 0}
-                    className={`mt-4 w-full bg-green-600 text-white py-2 rounded-md hover:bg-green-700 ${isSubmitting || items.length === 0 ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  >
-                    {isSubmitting ? 'Placing Order...' : 'Place Order'}
-                  </button>
-                </div>
-              </form>
+        
+        {/* Loading Overlay */}
+        {isSubmitting && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
+            <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-md w-full">
+              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
+              <h2 className="text-2xl font-bold text-gray-800 mb-2">Processing Your Order</h2>
+              <p className="text-gray-600">Please wait while we confirm your purchase...</p>
             </div>
           </div>
-       
+        )}
+
+        <div className="w-full shadow py-4 flex pe-4 mb-10">
+          <h2 className="px-4 text-xl font-semibold">CheckOut Page</h2>
+        </div>
+
+        <div className="mx-auto py-8 px-4">
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+            {/* Order Summary Card */}
+            <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]">
+              <div className="text-center">
+                <div className="text-4xl font-bold text-blue-600 mb-2">
+                  <span className="text-3xl">৳</span>{grandTotal.toLocaleString()}
+                </div>
+                <h3 className="text-xl font-semibold mb-4">Your Order</h3>
+                
+                <div className="max-h-96 overflow-y-auto mb-6">
+                  {items.map((item) => (
+                    <div key={`${item.productId}-${item.variantId}`} className="flex items-center justify-between py-3 border-b">
+                      <div className="flex items-center">
+                        {item.image && (
+                          <div className="w-16 h-16 mr-4 relative">
+                            <Image
+                              src={item.image}
+                              alt={item.name}
+                              fill
+                              className="object-cover rounded"
+                            />
+                          </div>
+                        )}
+                        <div>
+                          <p className="font-medium">{item.name}</p>
+                          <p className="text-gray-500 text-sm">৳{item.price} × {item.quantity}</p>
+                        </div>
+                      </div>
+                      <p className="font-medium">৳{(item.price * item.quantity).toLocaleString()}</p>
+                    </div>
+                  ))}
+                </div>
+
+                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
+                  <div className="flex justify-between">
+                    <span>Subtotal:</span>
+                    <span>৳{totalDue.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between">
+                    <span>Delivery Charge:</span>
+                    <span>৳{deliveryCharge.toLocaleString()}</span>
+                  </div>
+                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                    <span>Total:</span>
+                    <span>৳{grandTotal.toLocaleString()}</span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Checkout Form */}
+            <div className="lg:col-span-7">
+              <div className="bg-white p-6 rounded-lg shadow-lg">
+                <h2 className="text-xl font-semibold mb-4">Order Delivery Details</h2>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
+                    <input
+                      type="text"
+                      name="name"
+                      value={formData.name}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your name"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Phone No</label>
+                    <input
+                      type="tel"
+                      name="phone"
+                      value={formData.phone}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your phone number"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Delivery Address</label>
+                    <input
+                      type="text"
+                      name="address"
+                      value={formData.address}
+                      onChange={handleInputChange}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter your delivery address"
+                      required
+                      disabled={isSubmitting}
+                    />
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Delivery Charge</label>
+                    <div className="flex flex-wrap gap-4">
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="deliveryArea"
+                          value="inside_dhaka"
+                          checked={formData.deliveryArea === "inside_dhaka"}
+                          onChange={handleInputChange}
+                          className="h-5 w-5 text-blue-600"
+                          disabled={isSubmitting}
+                        />
+                        <span>Inside Dhaka - 60৳</span>
+                      </label>
+                      <label className="flex items-center space-x-2">
+                        <input
+                          type="radio"
+                          name="deliveryArea"
+                          value="outside_dhaka"
+                          checked={formData.deliveryArea === "outside_dhaka"}
+                          onChange={handleInputChange}
+                          className="h-5 w-5 text-blue-600"
+                          disabled={isSubmitting}
+                        />
+                        <span>Outside Dhaka - 100৳</span>
+                      </label>
+                    </div>
+                  </div>
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Payment Method</label>
+                    <select
+                      name="paymentMethod"
+                      value={paymentMethod}
+                      onChange={(e) => setPaymentMethod(e.target.value)}
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      disabled={isSubmitting}
+                    >
+                      <option value="cod">Cash on Delivery</option>
+                      <option value="bkash">bKash</option>
+                      <option value="nagad">Nagad</option>
+                    </select>
+                  </div>
+                  {(paymentMethod === "bkash" || paymentMethod === "nagad") && (
+                    <div>
+                      <label className="block text-sm font-medium text-gray-600 mb-1">Transaction ID</label>
+                      <input
+                        type="text"
+                        value={transactionId}
+                        onChange={(e) => setTransactionId(e.target.value)}
+                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                        placeholder="Enter transaction ID"
+                        required
+                        disabled={isSubmitting}
+                      />
+                    </div>
+                  )}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-600 mb-1">Additional Notes (Optional)</label>
+                    <textarea
+                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      placeholder="Enter any special instructions..."
+                      rows={3}
+                      disabled={isSubmitting}
+                    ></textarea>
+                  </div>
+                  <button
+                    type="submit"
+                    disabled={isSubmitting || items.length === 0}
+                    className={`w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
+                      isSubmitting || items.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+                    }`}
+                  >
+                    {isSubmitting ? "Processing Order..." : "Place Order"}
+                  </button>
+                </form>
+              </div>
+            </div>
+          </div>
         </div>
       </CommonLayout>
     </>

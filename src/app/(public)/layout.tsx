@@ -1,17 +1,16 @@
 "use client";
 
-
 import Footer from "@/components/Frontend/Footer";
 import Navbar from "@/components/Frontend/Navbar";
 import { useSidebar } from "@/hooks/useSidebar";
 import { navbarRef, sidebarRef } from "@/lib/refs";
-import { easeInOut, motion } from "motion/react";
+import { motion } from "framer-motion";
 import { useEffect, useState } from "react";
 
-// Animation configuration for consistent transitions
+// Correct animation configuration with proper typing
 const transitionConfig = {
-  type: "tween",
-  ease: easeInOut,
+  type: "tween" as const, // Explicitly type as 'tween'
+  ease: "easeInOut", // Use string literal or import from framer-motion
   duration: 0.3,
 };
 
@@ -52,7 +51,6 @@ export default function PublicLayout({
   useEffect(() => {
     const updateLayout = () => {
       if (isDesktop) {
-        // On desktop, sidebar is hidden (mobile-only)
         setLayoutStyles({
           navbar: {
             width: "100vw",
@@ -71,7 +69,6 @@ export default function PublicLayout({
           },
         });
       } else {
-        // On mobile, sidebar can be toggled
         setLayoutStyles({
           navbar: {
             width: "100vw",
@@ -131,10 +128,9 @@ export default function PublicLayout({
           willChange: "transform",
         }}
       >
-      <Navbar/>
+        <Navbar/>
       </motion.div>
 
-      {/* <div className='relative flex flex-col w-svw'> */}
       {/* Content container */}
       <motion.div
         className='absolute w-full p-2 overflow-y-scroll scrollbar-thin'
@@ -150,7 +146,6 @@ export default function PublicLayout({
         <div className='w-full'>{children}</div>
         <Footer />
       </motion.div>
-      {/* </div> */}
     </div>
   );
 }

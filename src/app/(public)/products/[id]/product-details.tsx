@@ -6,7 +6,6 @@ import Image from "next/image";
 import { useParams } from "next/navigation";
 import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
-import { FaMinus, FaPlus } from "react-icons/fa6";
 import { Toaster } from "react-hot-toast";
 
 import { Product, Variant } from "@/types/product"; // Use Product and Variant from @/types/product
