@@ -16,7 +16,6 @@ import { useGetProductByIdQuery } from "@/lib/api/productsApi";
 import { useGetProductsByCategoriesQuery } from "@/lib/api/publicApi";
 import AddToCartBtn from "@/components/ui/molecules/addToCartBtn";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { usePreorder } from "@/hooks/usePreorder";
 interface MediaItem {
   type: "image" | "video";
@@ -79,7 +78,7 @@ export default function ProductPage() {
     if (variant) {
       setSelectedVariant(variant);
       setSellingPrice(parseFloat(variant.selling_price));
-      setOfferPrice(variant.offer_price as number);
+      setOfferPrice(parseFloat(variant.offer_price)); // Convert string to number
     }
   };
 
@@ -343,7 +342,13 @@ export default function ProductPage() {
                 Please select a variant before adding to cart
               </div>
             )}
-
+            {isPreorder && (
+              <div className='mb-4 bg-yellow-100 text-yellow-800 text-sm font-medium px-4 py-3 rounded-lg shadow'>
+                <strong>Preorder Notice:</strong> This item is available for
+                preorder. Your order will be reserved and shipped as soon as the
+                product becomes available—typically within 7–10 business days.
+              </div>
+            )}
             <div className='mt-5'>
               {isPreorder ? (
                 <div>
@@ -353,16 +358,13 @@ export default function ProductPage() {
                         productId: product._id,
                         name: product.name,
                         quantity: quantity,
-                        price:
-                          selectedVariant?.offer_price ??
-                          (!hasVariants && variants.length === 1
-                            ? variants[0].offer_price
-                            : 0),
-                        isPreOrder:
-                          selectedVariant?.isPreOrder ??
-                          (!hasVariants && variants.length === 1
-                            ? variants[0].isPreOrder
-                            : false),
+                        price: parseFloat(
+                          selectedVariant?.offer_price?.toString() ??
+                            (variants.length === 1
+                              ? variants[0].offer_price?.toString()
+                              : "0")
+                        ),
+                        isPreOrder: true, // Since we're in the preorder section, this is always true
                         variantId: selectedVariant?._id ?? null,
                         variantName: selectedVariant?.name ?? null,
                         image: product.images?.[0]?.image?.secure_url ?? "",

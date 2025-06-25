@@ -1,4 +1,3 @@
-// src/app/checkout/page.tsx
 "use client";
 
 import React, { useState } from "react";
@@ -9,7 +8,7 @@ import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AppDispatch, RootState } from "@/lib/store";
 import { clearCart } from "@/lib/features/cart/cartSlice";
-import { usePreorder } from "@/hooks/usePreorder";
+import { PreorderItem, usePreorder } from "@/hooks/usePreorder";
 import { clearProduct } from "@/lib/features/preorder/preorderSlice";
 
 interface CartItem {
@@ -50,19 +49,18 @@ export default function Checkout() {
   const { product: preOrderProduct } = usePreorder();
   const cart = useSelector((state: RootState) => state.cart);
 
-  const items: CartItem[] = preOrderProduct
-    ? [
-        {
-          productId: preOrderProduct.productId,
-          variantId: preOrderProduct.variantId,
-          variantName: preOrderProduct.variantName,
-          isPreOrder: preOrderProduct.isPreOrder,
-          quantity: preOrderProduct.quantity,
-          price: preOrderProduct.price,
-          name: preOrderProduct.name,
-          image: preOrderProduct.image,
-        },
-      ]
+  // Always treat items as an array of CartItem or PreorderItem
+  const items: (CartItem | PreorderItem)[] = preOrderProduct
+    ? [{
+        productId: preOrderProduct.productId,
+        variantId: preOrderProduct.variantId,
+        variantName: preOrderProduct.variantName,
+        isPreOrder: preOrderProduct.isPreOrder,
+        quantity: preOrderProduct.quantity,
+        price: preOrderProduct.price,
+        name: preOrderProduct.name,
+        image: preOrderProduct.image,
+      }]
     : cart.items;
 
   const [formData, setFormData] = useState({
@@ -75,8 +73,17 @@ export default function Checkout() {
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
 
+  // Handler for input and select elements
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
+  ) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+  };
+
+  // Separate handler for textarea elements
+  const handleTextareaChange = (
+    e: React.ChangeEvent<HTMLTextAreaElement>
   ) => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
@@ -110,10 +117,11 @@ export default function Checkout() {
     return true;
   };
 
-  const totalDue = items.reduce((total, item) => {
-    const itemTotal = item.isPreOrder
-      ? item.price * 0.2 * item.quantity // 20% deposit
-      : item.price * item.quantity;
+  // Properly typed reduce function
+  const totalDue = items.reduce((total: number, item: CartItem | PreorderItem) => {
+    const itemTotal = 'isPreOrder' in item && item.isPreOrder
+      ? item.price * 0.2 * item.quantity // 20% deposit for preorders
+      : item.price * item.quantity; // Full price for regular items
     return total + itemTotal;
   }, 0);
 
@@ -127,8 +135,6 @@ export default function Checkout() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    console.log(items);
-    
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -161,7 +167,6 @@ export default function Checkout() {
 
       dispatch(clearCart());
       if (preOrderProduct) {
-        // Clear preorder after successful order
         dispatch(clearProduct());
       }
       toast.success("Order placed successfully!");
@@ -241,16 +246,16 @@ export default function Checkout() {
                             </p>
                           )}
                           <p className='text-gray-500 text-sm'>
-                            {item.isPreOrder
+                            {'isPreOrder' in item && item.isPreOrder
                               ? `৳${(item.price * 0.2).toLocaleString()} × ${item.quantity} (20% deposit)`
                               : `৳${item.price.toLocaleString()} × ${item.quantity}`}
                           </p>
                         </div>
                       </div>
                       <p className='font-medium'>
-                        {item.isPreOrder
-                          ? `৳${(item.price * 0.2).toLocaleString()} × ${item.quantity} (20% deposit)`
-                          : `৳${item.price.toLocaleString()} × ${item.quantity}`}
+                        {'isPreOrder' in item && item.isPreOrder
+                          ? `৳${(item.price * 0.2 * item.quantity).toLocaleString()}`
+                          : `৳${(item.price * item.quantity).toLocaleString()}`}
                       </p>
                     </div>
                   ))}
@@ -314,11 +319,10 @@ export default function Checkout() {
                     <label className='block text-sm font-medium text-gray-600 mb-1'>
                       Delivery Address
                     </label>
-                    <input
-                      type='text'
+                    <textarea
                       name='address'
                       value={formData.address}
-                      onChange={handleInputChange}
+                      onChange={handleTextareaChange}
                       className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       placeholder='Enter your delivery address'
                       required
@@ -396,8 +400,9 @@ export default function Checkout() {
                       className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       placeholder='Enter any special instructions...'
                       rows={3}
+                      onChange={handleTextareaChange}
                       disabled={isSubmitting}
-                    ></textarea>
+                    />
                   </div>
                   <button
                     type='submit'

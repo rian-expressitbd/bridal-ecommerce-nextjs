@@ -124,7 +124,7 @@ const Footer = () => {
             <div className='flex items-center gap-2'>
               <h3>&copy; {new Date().getFullYear()} All rights reserved</h3>
               <img
-                className='w-[104px] h-[38px] mb-[15px]'
+                className='w-[77px] h-[18px]'
                 alt='logo'
                 src='/assets/logo.png'
               />

@@ -15,6 +15,7 @@ export interface ProductImage {
 }
 
 export interface Product {
+ 
   _id: string;
   name: string;
 
@@ -59,18 +60,17 @@ export interface Variant {
   _id: string;
   name?: string;
   variants_values: string[];
-  selling_price: number;
-  offer_price: number;
+  selling_price: string; // Changed to string since you're parsing it
+  offer_price: string;   // Changed to string since you're parsing it
+  isPreOrder?: boolean;  // Added this
   image?: {
     image: {
       secure_url: string;
     };
   };
   variants_stock?: number;
-  // Optional fields if not used in ProductDetail
   productId?: string;
   barcode?: string;
   sku?: string;
   condition?: string;
-  // ...add other fields as optional if necessary
 }

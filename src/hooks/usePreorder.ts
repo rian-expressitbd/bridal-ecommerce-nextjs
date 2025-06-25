@@ -3,12 +3,12 @@ import { useSelector, useDispatch } from "react-redux";
 import { RootState } from "@/lib/store";
 import { setProduct, clearProduct } from "@/lib/features/preorder/preorderSlice";
 
-interface PreorderItem {
+export interface PreorderItem {
   productId: string;
   name: string;
   quantity: number;
-  isPreOrder:boolean;
-  price: number;
+  isPreOrder: boolean;
+  price: number; // Ensure this is always number
   variantId?: string | null;
   variantName?: string | null;
   image?: string;
@@ -18,16 +18,11 @@ export const usePreorder = () => {
   const dispatch = useDispatch();
   const product = useSelector((state: RootState) => state.preorder.product);
 
-  const setPreorderProduct = (item: PreorderItem) => {
+  const setPreorderProduct = (item: Omit<PreorderItem, 'isPreOrder'> & { isPreOrder?: boolean }) => {
     dispatch(setProduct({
-      productId: item.productId,
-      name: item.name,
-      quantity: item.quantity,
-      isPreOrder:item.isPreOrder,
-      price: item.price,
-      variantId: item.variantId || null,
-      variantName: item.variantName || null,
-      image: item.image || ''
+      ...item,
+      isPreOrder: item.isPreOrder ?? true, // Default to true if not specified
+      price: typeof item.price === 'string' ? parseFloat(item.price) : item.price
     }));
   };
 
