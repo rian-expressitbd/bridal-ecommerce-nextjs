@@ -8,13 +8,16 @@ import React, { useEffect, useState, useRef } from "react";
 import { motion } from "framer-motion";
 import { Toaster } from "react-hot-toast";
 import { Product, Variant } from "@/types/product";
+// import { Product } from "@/types/cart";
 import Breadcrumb from "@/components/ui/Breadcrumb";
 import { VideoPlayer } from "@/components/media/VideoPlayer";
 import Title from "@/components/ui/Title";
 import { useGetProductByIdQuery } from "@/lib/api/productsApi";
 import { useGetProductsByCategoriesQuery } from "@/lib/api/publicApi";
 import AddToCartBtn from "@/components/ui/molecules/addToCartBtn";
-
+import Link from "next/link";
+import { useRouter } from "next/navigation";
+import { usePreorder } from "@/hooks/usePreorder";
 interface MediaItem {
   type: "image" | "video";
   url: string;
@@ -46,9 +49,15 @@ export default function ProductPage() {
   const hasVariants = product?.hasVariants || false;
   const variants: Variant[] = product?.variantsId || [];
 
+  const { setPreorderProduct } = usePreorder();
+
   useEffect(() => {
+    console.log(product);
+
     if (product?.variantsId?.length) {
-      const prices = product.variantsId.map((v: Variant) => parseFloat(v.selling_price));
+      const prices = product.variantsId.map((v: Variant) =>
+        parseFloat(v.selling_price)
+      );
       setMinPrice(Math.min(...prices));
       setMaxPrice(Math.max(...prices));
 
@@ -70,7 +79,7 @@ export default function ProductPage() {
     if (variant) {
       setSelectedVariant(variant);
       setSellingPrice(parseFloat(variant.selling_price));
-      setOfferPrice(parseFloat(variant.offer_price));
+      setOfferPrice(variant.offer_price as number);
     }
   };
 
@@ -128,9 +137,10 @@ export default function ProductPage() {
     (hasVariants || variants.length > 1) && !selectedVariant;
 
   // Determine if this is a preorder product
-  const isPreorder = product.isPreOrder || 
-                    (selectedVariant?.isPreOrder ?? false) || 
-                    (!hasVariants && variants.length === 1 && variants[0].isPreOrder);
+  const isPreorder =
+    product.isPreOrder ||
+    (selectedVariant?.isPreOrder ?? false) ||
+    (!hasVariants && variants.length === 1 && variants[0].isPreOrder);
 
   return (
     <div className='overflow-x-hidden'>
@@ -301,7 +311,8 @@ export default function ProductPage() {
                 <h4 className='text-md font-semibold'>Select Variant:</h4>
                 <div className='grid grid-cols-3 lg:grid-cols-4 gap-4 mt-2'>
                   {variants.map((variant: Variant) => {
-                    const variantValue = variant.variants_values?.join("-") || variant.name || "";
+                    const variantValue =
+                      variant.variants_values?.join("-") || variant.name || "";
                     const isSelected = selectedVariant?._id === variant._id;
                     return (
                       <div key={`var-${uuidv4()}`}>
@@ -313,9 +324,11 @@ export default function ProductPage() {
                           }`}
                           onClick={() => handleSelectVariant(variant._id)}
                         >
-                          <h3 className="truncate">{variantValue}</h3>
+                          <h3 className='truncate'>{variantValue}</h3>
                           {variant.isPreOrder && (
-                            <span className="ml-2 text-xs text-blue-600">(Preorder)</span>
+                            <span className='ml-2 text-xs text-blue-600'>
+                              (Preorder)
+                            </span>
                           )}
                         </div>
                       </div>
@@ -331,31 +344,57 @@ export default function ProductPage() {
               </div>
             )}
 
-            <div className="mt-5">
+            <div className='mt-5'>
               {isPreorder ? (
                 <div>
-                  <button
-                    className="inline-flex justify-center items-center text-sm md:text-base text-nowrap px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 border border-orange-200 text-white font-semibold rounded-lg transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full"
+                  <Link
                     onClick={() => {
-                      // Handle preorder logic here
-                      console.log("Preorder clicked");
+                      const preorderData = {
+                        productId: product._id,
+                        name: product.name,
+                        quantity: quantity,
+                        price:
+                          selectedVariant?.offer_price ??
+                          (!hasVariants && variants.length === 1
+                            ? variants[0].offer_price
+                            : 0),
+                        isPreOrder:
+                          selectedVariant?.isPreOrder ??
+                          (!hasVariants && variants.length === 1
+                            ? variants[0].isPreOrder
+                            : false),
+                        variantId: selectedVariant?._id ?? null,
+                        variantName: selectedVariant?.name ?? null,
+                        image: product.images?.[0]?.image?.secure_url ?? "",
+                      };
+                      setPreorderProduct(preorderData);
                     }}
+                    href='/checkout'
+                    className='inline-flex justify-center items-center text-sm md:text-base text-nowrap px-8 py-2 bg-gradient-to-r from-orange-500 to-orange-700 border border-orange-200 text-white font-semibold rounded-lg transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full'
                   >
                     Preorder Now
-                  </button>
-                  <div className="mt-2 text-sm text-gray-600">
+                  </Link>
+                  <div className='mt-2 text-sm text-gray-600'>
                     <p>Estimated delivery: 2-4 weeks after order</p>
-                    <p className="text-xs mt-1">Preorder items will ship when available</p>
+                    <p className='text-xs mt-1'>
+                      Preorder items will ship when available
+                    </p>
                   </div>
                 </div>
               ) : (
                 <AddToCartBtn
                   item={product}
-                  variant={selectedVariant || (!hasVariants && variants.length === 1 ? variants[0] : undefined)}
+                  variant={
+                    selectedVariant ||
+                    (!hasVariants && variants.length === 1
+                      ? variants[0]
+                      : undefined)
+                  }
                   quantity={quantity}
                   disabled={hasVariants ? !selectedVariant : false}
                   className={
-                    (hasVariants && !selectedVariant) || (hasVariants && variants.length > 1 && !selectedVariant)
+                    (hasVariants && !selectedVariant) ||
+                    (hasVariants && variants.length > 1 && !selectedVariant)
                       ? "disabled"
                       : "inline-flex justify-center items-center text-sm md:text-base text-nowrap px-8 py-2 bg-gradient-to-r from-teal-500 to-teal-700 border border-teal-200 text-white font-semibold rounded-lg transform transition-transform duration-300 ease-in-out hover:scale-105 hover:shadow-2xl w-full"
                   }

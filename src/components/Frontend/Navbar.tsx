@@ -122,7 +122,9 @@ const Navbar = () => {
   if (!businessData) return null;
 
   const logoUrl =
-    businessData.logo?.optimizeUrl || businessData.logo?.secure_url;
+    businessData.logo?.secure_url;
+    console.log(businessData);
+    
 
   return (
     <>

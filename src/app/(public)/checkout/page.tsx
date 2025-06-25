@@ -1,31 +1,69 @@
+// src/app/checkout/page.tsx
 "use client";
 
-import React, { useState,  JSX } from "react";
+import React, { useState } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import CommonLayout from "@/app/layouts/CommonLayout";
 import { Toaster, toast } from "react-hot-toast";
-import { Order } from "@/types/cart";
 import { useRouter } from "next/navigation";
 import Image from "next/image";
 import { AppDispatch, RootState } from "@/lib/store";
 import { clearCart } from "@/lib/features/cart/cartSlice";
+import { usePreorder } from "@/hooks/usePreorder";
+import { clearProduct } from "@/lib/features/preorder/preorderSlice";
 
 interface CartItem {
   productId: string;
   variantId?: string | null;
+  variantName?: string | null;
   quantity: number;
   price: number;
   name: string;
   image?: string;
 }
 
-export default function Checkout(): JSX.Element {
+interface Order {
+  customer_name: string;
+  customer_phone: string;
+  customer_address: string;
+  delivery_area: string;
+  products: {
+    productId: string;
+    variantId?: string;
+    variantName?: string;
+    quantity: number;
+    price: number;
+    name: string;
+    image?: string;
+  }[];
+  total_amount: number;
+  payment_method: string;
+  transaction_id: string | null;
+  status: string;
+  created_at: string;
+  isPreorder?: boolean;
+}
+
+export default function Checkout() {
   const dispatch = useDispatch<AppDispatch>();
   const router = useRouter();
-  const { items } = useSelector((state: RootState) => state.cart) as {
-    isCartOpen: boolean;
-    items: CartItem[];
-  };
+  const { product: preOrderProduct } = usePreorder();
+  const cart = useSelector((state: RootState) => state.cart);
+
+  const items: CartItem[] = preOrderProduct
+    ? [
+        {
+          productId: preOrderProduct.productId,
+          variantId: preOrderProduct.variantId,
+          variantName: preOrderProduct.variantName,
+          isPreOrder: preOrderProduct.isPreOrder,
+          quantity: preOrderProduct.quantity,
+          price: preOrderProduct.price,
+          name: preOrderProduct.name,
+          image: preOrderProduct.image,
+        },
+      ]
+    : cart.items;
 
   const [formData, setFormData] = useState({
     name: "",
@@ -36,9 +74,6 @@ export default function Checkout(): JSX.Element {
   const [paymentMethod, setPaymentMethod] = useState<string>("cod");
   const [transactionId, setTransactionId] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
- 
-
- 
 
   const handleInputChange = (
     e: React.ChangeEvent<HTMLInputElement | HTMLSelectElement>
@@ -75,10 +110,12 @@ export default function Checkout(): JSX.Element {
     return true;
   };
 
-  const totalDue = items.reduce(
-    (total, item) => total + (item.price || 0) * item.quantity,
-    0
-  );
+  const totalDue = items.reduce((total, item) => {
+    const itemTotal = item.isPreOrder
+      ? item.price * 0.2 * item.quantity // 20% deposit
+      : item.price * item.quantity;
+    return total + itemTotal;
+  }, 0);
 
   const deliveryCharge =
     paymentMethod === "cod"
@@ -90,6 +127,8 @@ export default function Checkout(): JSX.Element {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    console.log(items);
+    
     if (!validateForm()) return;
 
     setIsSubmitting(true);
@@ -104,20 +143,27 @@ export default function Checkout(): JSX.Element {
         products: items.map((item) => ({
           productId: item.productId,
           variantId: item.variantId ?? undefined,
+          variantName: item.variantName ?? undefined,
           quantity: item.quantity,
           price: item.price,
           name: item.name,
+          image: item.image,
         })),
         total_amount: grandTotal,
         payment_method: paymentMethod,
         transaction_id: paymentMethod !== "cod" ? transactionId : null,
         status: "pending",
         created_at: new Date().toISOString(),
+        isPreorder: !!preOrderProduct,
       };
 
       console.log("Order placed:", orderPayload);
 
       dispatch(clearCart());
+      if (preOrderProduct) {
+        // Clear preorder after successful order
+        dispatch(clearProduct());
+      }
       toast.success("Order placed successfully!");
       setTimeout(() => router.push("/order-confirmation"), 2000);
     } catch (error) {
@@ -140,66 +186,86 @@ export default function Checkout(): JSX.Element {
     <>
       <CommonLayout>
         <Toaster position='top-center' />
-        
-        {/* Loading Overlay */}
+
         {isSubmitting && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center">
-            <div className="bg-white p-8 rounded-lg shadow-xl text-center max-w-md w-full">
-              <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-4"></div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Processing Your Order</h2>
-              <p className="text-gray-600">Please wait while we confirm your purchase...</p>
+          <div className='fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center'>
+            <div className='bg-white p-8 rounded-lg shadow-xl text-center max-w-md w-full'>
+              <div className='animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-500 mx-auto mb-4'></div>
+              <h2 className='text-2xl font-bold text-gray-800 mb-2'>
+                Processing Your Order
+              </h2>
+              <p className='text-gray-600'>
+                Please wait while we confirm your purchase...
+              </p>
             </div>
           </div>
         )}
 
-        <div className="w-full shadow py-4 flex pe-4 mb-10">
-          <h2 className="px-4 text-xl font-semibold">CheckOut Page</h2>
+        <div className='w-full shadow py-4 flex pe-4 mb-10'>
+          <h2 className='px-4 text-xl font-semibold'>CheckOut Page</h2>
         </div>
 
-        <div className="mx-auto py-8 px-4">
-          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
+        <div className='mx-auto py-8 px-4'>
+          <div className='grid grid-cols-1 lg:grid-cols-12 gap-8'>
             {/* Order Summary Card */}
-            <div className="lg:col-span-5 bg-white p-6 rounded-2xl shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]">
-              <div className="text-center">
-                <div className="text-4xl font-bold text-blue-600 mb-2">
-                  <span className="text-3xl">৳</span>{grandTotal.toLocaleString()}
+            <div className='lg:col-span-5 bg-white p-6 rounded-2xl shadow-[rgba(0,_0,_0,_0.24)_0px_3px_8px]'>
+              <div className='text-center'>
+                <div className='text-4xl font-bold text-blue-600 mb-2'>
+                  <span className='text-3xl'>৳</span>
+                  {grandTotal.toLocaleString()}
                 </div>
-                <h3 className="text-xl font-semibold mb-4">Your Order</h3>
-                
-                <div className="max-h-96 overflow-y-auto mb-6">
+                <h3 className='text-xl font-semibold mb-4'>Your Order</h3>
+
+                <div className='max-h-96 overflow-y-auto mb-6'>
                   {items.map((item) => (
-                    <div key={`${item.productId}-${item.variantId}`} className="flex items-center justify-between py-3 border-b">
-                      <div className="flex items-center">
+                    <div
+                      key={`${item.productId}-${item.variantId}`}
+                      className='flex items-center justify-between py-3 border-b'
+                    >
+                      <div className='flex items-center'>
                         {item.image && (
-                          <div className="w-16 h-16 mr-4 relative">
+                          <div className='w-16 h-16 mr-4 relative'>
                             <Image
                               src={item.image}
                               alt={item.name}
                               fill
-                              className="object-cover rounded"
+                              className='object-cover rounded'
                             />
                           </div>
                         )}
                         <div>
-                          <p className="font-medium">{item.name}</p>
-                          <p className="text-gray-500 text-sm">৳{item.price} × {item.quantity}</p>
+                          <p className='font-medium'>{item.name}</p>
+                          {item.variantName && (
+                            <p className='text-gray-500 text-sm'>
+                              Variant: {item.variantName}
+                            </p>
+                          )}
+                          <p className='text-gray-500 text-sm'>
+                            {item.isPreOrder
+                              ? `৳${(item.price * 0.2).toLocaleString()} × ${item.quantity} (20% deposit)`
+                              : `৳${item.price.toLocaleString()} × ${item.quantity}`}
+                          </p>
                         </div>
                       </div>
-                      <p className="font-medium">৳{(item.price * item.quantity).toLocaleString()}</p>
+                      <p className='font-medium'>
+                        {item.isPreOrder
+                          ? `৳${(item.price * 0.2).toLocaleString()} × ${item.quantity} (20% deposit)`
+                          : `৳${item.price.toLocaleString()} × ${item.quantity}`}
+                      </p>
                     </div>
                   ))}
                 </div>
 
-                <div className="space-y-3 bg-gray-50 p-4 rounded-lg">
-                  <div className="flex justify-between">
+                <div className='space-y-3 bg-gray-50 p-4 rounded-lg'>
+                  <div className='flex justify-between'>
                     <span>Subtotal:</span>
                     <span>৳{totalDue.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between">
+                  <div className='flex justify-between'>
                     <span>Delivery Charge:</span>
                     <span>৳{deliveryCharge.toLocaleString()}</span>
                   </div>
-                  <div className="flex justify-between font-bold text-lg pt-2 border-t">
+                  <div className='flex justify-between font-bold text-lg pt-2 border-t'>
                     <span>Total:</span>
                     <span>৳{grandTotal.toLocaleString()}</span>
                   </div>
@@ -208,72 +274,82 @@ export default function Checkout(): JSX.Element {
             </div>
 
             {/* Checkout Form */}
-            <div className="lg:col-span-7">
-              <div className="bg-white p-6 rounded-lg shadow-lg">
-                <h2 className="text-xl font-semibold mb-4">Order Delivery Details</h2>
-                <form onSubmit={handleSubmit} className="space-y-4">
+            <div className='lg:col-span-7'>
+              <div className='bg-white p-6 rounded-lg shadow-lg'>
+                <h2 className='text-xl font-semibold mb-4'>
+                  Order Delivery Details
+                </h2>
+                <form onSubmit={handleSubmit} className='space-y-4'>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Name</label>
+                    <label className='block text-sm font-medium text-gray-600 mb-1'>
+                      Name
+                    </label>
                     <input
-                      type="text"
-                      name="name"
+                      type='text'
+                      name='name'
                       value={formData.name}
                       onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter your name"
+                      className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      placeholder='Enter your name'
                       required
                       disabled={isSubmitting}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Phone No</label>
+                    <label className='block text-sm font-medium text-gray-600 mb-1'>
+                      Phone No
+                    </label>
                     <input
-                      type="tel"
-                      name="phone"
+                      type='tel'
+                      name='phone'
                       value={formData.phone}
                       onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter your phone number"
+                      className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      placeholder='Enter your phone number'
                       required
                       disabled={isSubmitting}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Delivery Address</label>
+                    <label className='block text-sm font-medium text-gray-600 mb-1'>
+                      Delivery Address
+                    </label>
                     <input
-                      type="text"
-                      name="address"
+                      type='text'
+                      name='address'
                       value={formData.address}
                       onChange={handleInputChange}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter your delivery address"
+                      className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      placeholder='Enter your delivery address'
                       required
                       disabled={isSubmitting}
                     />
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Delivery Charge</label>
-                    <div className="flex flex-wrap gap-4">
-                      <label className="flex items-center space-x-2">
+                    <label className='block text-sm font-medium text-gray-600 mb-1'>
+                      Delivery Charge
+                    </label>
+                    <div className='flex flex-wrap gap-4'>
+                      <label className='flex items-center space-x-2'>
                         <input
-                          type="radio"
-                          name="deliveryArea"
-                          value="inside_dhaka"
+                          type='radio'
+                          name='deliveryArea'
+                          value='inside_dhaka'
                           checked={formData.deliveryArea === "inside_dhaka"}
                           onChange={handleInputChange}
-                          className="h-5 w-5 text-blue-600"
+                          className='h-5 w-5 text-blue-600'
                           disabled={isSubmitting}
                         />
                         <span>Inside Dhaka - 60৳</span>
                       </label>
-                      <label className="flex items-center space-x-2">
+                      <label className='flex items-center space-x-2'>
                         <input
-                          type="radio"
-                          name="deliveryArea"
-                          value="outside_dhaka"
+                          type='radio'
+                          name='deliveryArea'
+                          value='outside_dhaka'
                           checked={formData.deliveryArea === "outside_dhaka"}
                           onChange={handleInputChange}
-                          className="h-5 w-5 text-blue-600"
+                          className='h-5 w-5 text-blue-600'
                           disabled={isSubmitting}
                         />
                         <span>Outside Dhaka - 100৳</span>
@@ -281,47 +357,55 @@ export default function Checkout(): JSX.Element {
                     </div>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Payment Method</label>
+                    <label className='block text-sm font-medium text-gray-600 mb-1'>
+                      Payment Method
+                    </label>
                     <select
-                      name="paymentMethod"
+                      name='paymentMethod'
                       value={paymentMethod}
                       onChange={(e) => setPaymentMethod(e.target.value)}
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                      className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
                       disabled={isSubmitting}
                     >
-                      <option value="cod">Cash on Delivery</option>
-                      <option value="bkash">bKash</option>
-                      <option value="nagad">Nagad</option>
+                      <option value='cod'>Cash on Delivery</option>
+                      <option value='bkash'>bKash</option>
+                      <option value='nagad'>Nagad</option>
                     </select>
                   </div>
                   {(paymentMethod === "bkash" || paymentMethod === "nagad") && (
                     <div>
-                      <label className="block text-sm font-medium text-gray-600 mb-1">Transaction ID</label>
+                      <label className='block text-sm font-medium text-gray-600 mb-1'>
+                        Transaction ID
+                      </label>
                       <input
-                        type="text"
+                        type='text'
                         value={transactionId}
                         onChange={(e) => setTransactionId(e.target.value)}
-                        className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                        placeholder="Enter transaction ID"
+                        className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                        placeholder='Enter transaction ID'
                         required
                         disabled={isSubmitting}
                       />
                     </div>
                   )}
                   <div>
-                    <label className="block text-sm font-medium text-gray-600 mb-1">Additional Notes (Optional)</label>
+                    <label className='block text-sm font-medium text-gray-600 mb-1'>
+                      Additional Notes (Optional)
+                    </label>
                     <textarea
-                      className="w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                      placeholder="Enter any special instructions..."
+                      className='w-full p-3 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500'
+                      placeholder='Enter any special instructions...'
                       rows={3}
                       disabled={isSubmitting}
                     ></textarea>
                   </div>
                   <button
-                    type="submit"
+                    type='submit'
                     disabled={isSubmitting || items.length === 0}
                     className={`w-full py-3 px-4 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors ${
-                      isSubmitting || items.length === 0 ? "opacity-50 cursor-not-allowed" : ""
+                      isSubmitting || items.length === 0
+                        ? "opacity-50 cursor-not-allowed"
+                        : ""
                     }`}
                   >
                     {isSubmitting ? "Processing Order..." : "Place Order"}

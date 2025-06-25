@@ -23,6 +23,7 @@ import sidebarReducer from "./features/sidebar/sidebarSlice";
 import themeReducer from "./features/theme/themeSlice";
 import { productsApi } from "./api/productsApi";
 import { businessesApi } from "./api/buissinessApi";
+import preorderReducer from "./features/preorder/preorderSlice";
 
 // Combine all reducers
 const combinedReducer = combineReducers({
@@ -34,6 +35,7 @@ const combinedReducer = combineReducers({
   cart: cartReducer,
   sidebar: sidebarReducer,
   theme: themeReducer,
+  preorder: preorderReducer,
 });
 
 // Wrap for Next.js hydration
